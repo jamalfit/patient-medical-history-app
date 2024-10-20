@@ -28,8 +28,8 @@ steps:
   args:
   - '-c'
   - |
-    echo "Deploying to Cloud Run:"
-    gcloud run deploy patient-medical-history-app \
+    echo "Updating Cloud Run service:"
+    gcloud run services update patient-medical-history-app \
       --image=us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA \
       --region=us-central1 \
       --platform=managed \
@@ -37,6 +37,14 @@ steps:
       --set-secrets=GOOGLE_CLIENT_ID=google-client-id:latest \
       --service-account=patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com \
       --verbosity=debug
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:380.0.0'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    echo "Checking updated service:"
+    gcloud run services describe patient-medical-history-app --region=us-central1 --format=yaml
 
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA'
