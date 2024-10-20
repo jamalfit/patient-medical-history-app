@@ -1,4 +1,3 @@
-# Specify logging option
 options:
   logging: CLOUD_LOGGING_ONLY
 
@@ -8,33 +7,25 @@ steps:
   args:
   - '-c'
   - |
-    gcloud version
+    echo "Current service account:"
     gcloud auth list
+    echo "Project configurations:"
     gcloud config list
-
-- name: 'gcr.io/cloud-builders/docker'
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
-    docker version
-    docker info
+    echo "IAM permissions for Cloud Build service account:"
+    gcloud projects get-iam-policy patient-medical-history-app \
+      --flatten="bindings[].members" \
+      --format='table(bindings.role,bindings.members)' \
+      --filter="bindings.members:$(gcloud auth list --format='value(account)')"
 
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:380.0.0'
   entrypoint: 'bash'
   args:
   - '-c'
   - |
+    echo "Listing Artifact Registry repositories:"
     gcloud artifacts repositories list --location=us
-    gcloud artifacts repositories describe gcr-images --location=us
-
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:380.0.0'
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
-    ping -c 4 us-docker.pkg.dev
-    curl -v https://us-docker.pkg.dev
+    echo "Describing gcr-images repository:"
+    gcloud artifacts repositories describe gcr-images --location=us || echo "Failed to describe repository"
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/patient-medical-history-app:$COMMIT_SHA', '.']
