@@ -26,14 +26,27 @@ steps:
   args:
   - '-c'
   - |
-    gcloud run deploy patient-medical-history-app \
-      --image=us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA \
-      --region=us-central1 \
-      --platform=managed \
-      --allow-unauthenticated \
-      --set-secrets=GOOGLE_CLIENT_ID=google-client-id:latest \
-      --service-account=patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com \
-      --verbosity=debug
+    if gcloud run services describe patient-medical-history-app --region=us-central1 --format="value(name)" 2>/dev/null; then
+      echo "Updating existing Cloud Run service"
+      gcloud run services update patient-medical-history-app \
+        --image=us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA \
+        --region=us-central1 \
+        --platform=managed \
+        --allow-unauthenticated \
+        --set-secrets=GOOGLE_CLIENT_ID=google-client-id:latest \
+        --service-account=patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com \
+        --verbosity=debug
+    else
+      echo "Creating new Cloud Run service"
+      gcloud run services create patient-medical-history-app \
+        --image=us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA \
+        --region=us-central1 \
+        --platform=managed \
+        --allow-unauthenticated \
+        --set-secrets=GOOGLE_CLIENT_ID=google-client-id:latest \
+        --service-account=patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com \
+        --verbosity=debug
+    fi
 
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA'
