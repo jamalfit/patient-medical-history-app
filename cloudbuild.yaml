@@ -23,10 +23,12 @@ steps:
   - |
     echo "Authenticating Docker:"
     gcloud auth configure-docker us-docker.pkg.dev --quiet
+    echo "Docker version:"
+    docker version
     echo "Building Docker image:"
-    docker build -t us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA .
+    docker build -t us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA . --verbose
     echo "Pushing Docker image:"
-    docker push us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA
+    docker push us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA --verbose
 
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:380.0.0'
   entrypoint: gcloud
@@ -43,6 +45,8 @@ steps:
   - '--allow-unauthenticated'
   - '--set-secrets'
   - 'GOOGLE_CLIENT_ID=google-client-id:latest'
+  - '--service-account'
+  - 'patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com'
 
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA'
