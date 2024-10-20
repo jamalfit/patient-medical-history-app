@@ -2,21 +2,6 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:380.0.0'
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
-    echo "Current service account:"
-    gcloud auth list
-    echo "Project configurations:"
-    gcloud config list
-    echo "Checking Cloud Run service account permissions:"
-    gcloud projects get-iam-policy $PROJECT_ID --format=yaml | grep -A 2 "roles/run.admin"
-    gcloud projects get-iam-policy $PROJECT_ID --format=yaml | grep -A 2 "roles/run.invoker"
-    echo "Listing existing Cloud Run services:"
-    gcloud run services list --platform=managed --region=us-central1
-
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA', '.']
 
@@ -28,8 +13,7 @@ steps:
   args:
   - '-c'
   - |
-    echo "Updating Cloud Run service:"
-    gcloud run services update patient-medical-history-app \
+    gcloud run deploy patient-medical-history-app \
       --image=us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA \
       --region=us-central1 \
       --platform=managed \
@@ -43,8 +27,10 @@ steps:
   args:
   - '-c'
   - |
-    echo "Checking updated service:"
-    gcloud run services describe patient-medical-history-app --region=us-central1 --format=yaml
+    echo "Waiting for deployment to stabilize..."
+    sleep 60
+    echo "Fetching container logs:"
+    gcloud run logs read --service=patient-medical-history-app --region=us-central1 --limit=50
 
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA'
