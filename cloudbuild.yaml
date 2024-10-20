@@ -11,42 +11,29 @@ steps:
     gcloud auth list
     echo "Project configurations:"
     gcloud config list
-    echo "Listing Artifact Registry repositories:"
-    gcloud artifacts repositories list --location=us
-    echo "Describing gcr-images repository:"
-    gcloud artifacts repositories describe gcr-images --location=us || echo "Failed to describe repository"
+    echo "Checking Cloud Run service account permissions:"
+    gcloud projects get-iam-policy $PROJECT_ID --format=yaml | grep -A 2 "roles/run.admin"
+    gcloud projects get-iam-policy $PROJECT_ID --format=yaml | grep -A 2 "roles/run.invoker"
 
 - name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA', '.']
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA']
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:380.0.0'
   entrypoint: 'bash'
   args:
   - '-c'
   - |
-    echo "Authenticating Docker:"
-    gcloud auth configure-docker us-docker.pkg.dev --quiet
-    echo "Docker version:"
-    docker version
-    echo "Building Docker image:"
-    docker build -t us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA . --verbose
-    echo "Pushing Docker image:"
-    docker push us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA --verbose
-
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:380.0.0'
-  entrypoint: gcloud
-  args:
-  - 'run'
-  - 'deploy'
-  - 'patient-medical-history-app'
-  - '--image'
-  - 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA'
-  - '--region'
-  - 'us-central1'
-  - '--platform'
-  - 'managed'
-  - '--allow-unauthenticated'
-  - '--set-secrets'
-  - 'GOOGLE_CLIENT_ID=google-client-id:latest'
-  - '--service-account'
-  - 'patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com'
+    gcloud run deploy patient-medical-history-app \
+      --image=us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA \
+      --region=us-central1 \
+      --platform=managed \
+      --allow-unauthenticated \
+      --set-secrets=GOOGLE_CLIENT_ID=google-client-id:latest \
+      --service-account=patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com \
+      --verbosity=debug
 
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA'
