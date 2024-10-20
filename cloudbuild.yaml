@@ -11,11 +11,6 @@ steps:
     gcloud auth list
     echo "Project configurations:"
     gcloud config list
-    echo "IAM permissions for Cloud Build service account:"
-    gcloud projects get-iam-policy patient-medical-history-app \
-      --flatten="bindings[].members" \
-      --format='table(bindings.role,bindings.members)' \
-      --filter="bindings.members:$(gcloud auth list --format='value(account)')"
 
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:380.0.0'
   entrypoint: 'bash'
