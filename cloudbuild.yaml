@@ -3,13 +3,27 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-# Build the container image
+# Print Docker version
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA', '.']
+  args: ['version']
+
+# List contents of the current directory
+- name: 'ubuntu'
+  args: ['ls', '-la']
+
+# Print contents of Dockerfile
+- name: 'ubuntu'
+  args: ['cat', 'Dockerfile']
+
+# Build the container image with verbose output
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '--progress=plain', '-t', 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA', '.']
+  id: 'build'
 
 # Push the container image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'us-docker.pkg.dev/$PROJECT_ID/gcr-images/patient-medical-history-app:$COMMIT_SHA']
+  id: 'push'
 
 # Deploy container image to Cloud Run
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
