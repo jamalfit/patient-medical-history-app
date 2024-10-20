@@ -22,14 +22,15 @@ def submit():
 
     try:
         print(f"Verifying token with Client ID: {CLIENT_ID}")  # Add this line for logging
-        idinfo = id_token.verify_oauth2_token(request.form['credential'], requests.Request(), CLIENT_ID)
-        
+        idinfo = id_token.verify_oauth2_token(
+            request.form['credential'], requests.Request(), CLIENT_ID)
+
         user_id = idinfo['sub']
         email = idinfo['email']
         print(f"Successfully authenticated user: {email}")  # Add this line for logging
-        
+
         return jsonify({"message": "Successfully authenticated", "email": email})
-    
+
     except ValueError as e:
         print(f"Token verification failed: {str(e)}")  # Add this line for logging
         return jsonify({"error": "Invalid token"}), 400

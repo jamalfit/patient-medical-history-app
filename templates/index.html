@@ -32,7 +32,7 @@
 
     <script>
         console.log("Client ID used in frontend:", "{{ client_id }}");
-        
+
         function handleCredentialResponse(response) {
             console.log("Received credential response:", response);
             document.getElementById('credential').value = response.credential;
