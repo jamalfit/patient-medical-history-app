@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from google.cloud import aiplatform
-from vertexai.language_models import TextGenerationModel
+from vertexai.preview.generative_models import GenerativeModel
 from ai_prompt import get_medical_report_prompt
 
 logging.basicConfig(level=logging.DEBUG)
@@ -32,16 +32,18 @@ def calculate_bmi(height_inches, weight_pounds):
     return round(bmi, 2)
 
 def generate_medical_report(patient_data):
-    logger.debug("Generating medical report")
+    logger.debug("Generating medical report using Gemini Pro model")
     try:
-        model = TextGenerationModel.from_pretrained("text-bison@001")
         prompt = get_medical_report_prompt(patient_data)
-        response = model.predict(prompt, max_output_tokens=1024, temperature=0.2)
+        
+        model = GenerativeModel("gemini-pro")
+        response = model.generate_content(prompt)
+        
         logger.debug("Medical report generated successfully")
         return response.text
     except Exception as e:
         logger.error(f"Error generating medical report: {str(e)}")
-        return "Error generating report"
+        return f"Error generating report: {str(e)}"
 
 @app.route('/')
 def index():
@@ -104,6 +106,7 @@ def process_form():
         }
         
         ai_response = generate_medical_report(patient_data)
+        logger.debug(f"AI Response: {ai_response}")
         
         # Parse the AI response
         asa_status = "Unknown"
@@ -115,18 +118,25 @@ def process_form():
 
         sections = ai_response.split("\n\n")
         for section in sections:
-            if section.startswith("ASA Status:"):
-                asa_status = section.split(":", 1)[1].strip()
-            elif section.startswith("Medication Analysis:"):
-                medication_analysis = section.split(":", 1)[1].strip()
-            elif section.startswith("Medical Evaluation:"):
-                medical_evaluation = section.split(":", 1)[1].strip()
-            elif section.startswith("Recommendations:"):
-                recommendations = section.split(":", 1)[1].strip()
-            elif section.startswith("Risk Assessment:"):
-                risk_assessment = section.split(":", 1)[1].strip()
-            elif section.startswith("Additional Notes:"):
-                additional_notes = section.split(":", 1)[1].strip()
+            logger.debug(f"Processing section: {section[:50]}...")  # Log first 50 chars of each section
+            if "ASA Physical Status Classification" in section:
+                asa_status = section.split(":", 1)[1].strip() if ":" in section else section
+                logger.debug(f"Found ASA Status: {asa_status}")
+            elif "Medication Analysis" in section:
+                medication_analysis = section.split(":", 1)[1].strip() if ":" in section else section
+                logger.debug(f"Found Medication Analysis: {medication_analysis[:50]}...")
+            elif "Medical Evaluation" in section:
+                medical_evaluation = section.split(":", 1)[1].strip() if ":" in section else section
+                logger.debug(f"Found Medical Evaluation: {medical_evaluation[:50]}...")
+            elif "Recommendations" in section:
+                recommendations = section.split(":", 1)[1].strip() if ":" in section else section
+                logger.debug(f"Found Recommendations: {recommendations[:50]}...")
+            elif "Risk Assessment" in section:
+                risk_assessment = section.split(":", 1)[1].strip() if ":" in section else section
+                logger.debug(f"Found Risk Assessment: {risk_assessment[:50]}...")
+            elif "Additional Notes" in section:
+                additional_notes = section.split(":", 1)[1].strip() if ":" in section else section
+                logger.debug(f"Found Additional Notes: {additional_notes[:50]}...")
         
         logger.debug("Form processed successfully, rendering result")
         return render_template('result.html', 

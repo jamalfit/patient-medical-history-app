@@ -9,8 +9,10 @@ def get_medical_report_prompt(patient_data):
     6. Provide a technical bulleted list of medication use as if this is used in 
     a medical office.  The report is not for use of the patient, but for the medical
     staff.
+    7. Calculate the BMI from the data submitted and obese classification
 
     Please use the following guidelines:
+    - Act as if you are an internist or hospitallist
     - Be thorough and considerate in your analysis.
     - Use medical terminology where appropriate, but ensure the report is understandable to healthcare professionals.
     - If there's insufficient information to make a determination, state this clearly.
@@ -28,6 +30,8 @@ def get_medical_report_prompt(patient_data):
 
     ASA Status: [Your ASA Physical Status Classification]
 
+    BMI: [Calculate the BMI and report it here]
+
     Medication Analysis:
     [Detailed analysis of current medications, potential interactions, and concerns]
 
@@ -38,7 +42,8 @@ def get_medical_report_prompt(patient_data):
     [Any recommended tests, consultations, or lifestyle changes]
 
     Risk Assessment:
-    [Highlight of potential risks or areas of concern]
+    [Highlight of potential risks or areas of concern especially for complex
+    dental procedures]
 
     Additional Notes:
     [Any other relevant information or observations]
