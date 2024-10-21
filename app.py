@@ -6,7 +6,6 @@ from google.auth.transport import requests as google_requests
 from google.cloud import secretmanager
 import openai
 
-# Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ openai.api_key = OPENAI_API_KEY
 @app.route('/')
 def index():
     logger.debug("Rendering index page")
-    return "Hello, World!"
+    return render_template('index.html', client_id=CLIENT_ID)
 
 @app.route('/health')
 def health_check():
