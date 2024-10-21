@@ -5,7 +5,10 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from google.cloud import secretmanager
+from google.api_core import exceptions as google_exceptions
 import openai
+import google.auth
+from google.auth.exceptions import DefaultCredentialsError
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -24,45 +27,65 @@ try:
     secret_client = secretmanager.SecretManagerServiceClient()
     logger.info("Secret Manager client initialized successfully")
 except Exception as e:
-    logger.error(f"Failed to initialize Secret Manager client: {str(e)}")
+    logger.error(f"Failed to initialize Secret Manager client: {str(e)}", exc_info=True)
     secret_client = None
+
+# Attempt to load default credentials
+try:
+    credentials, project = google.auth.default()
+    logger.info(f"Default credentials loaded. Project: {project}")
+except DefaultCredentialsError as e:
+    logger.error(f"Failed to load default credentials: {str(e)}")
 
 def access_secret_version(secret_id, version_id="latest"):
     logger.debug(f"Attempting to access secret: {secret_id}")
     if not secret_client or not PROJECT_ID:
-        logger.warning(f"Secret Manager not available. Falling back to environment variable for {secret_id}")
+        logger.warning(f"Secret Manager client or PROJECT_ID not available. secret_client: {secret_client}, PROJECT_ID: {PROJECT_ID}")
         env_var = os.environ.get(secret_id.upper().replace('-', '_'))
-        logger.debug(f"Environment variable {secret_id.upper().replace('-', '_')}: {'Set' if env_var else 'Not set'}")
-        return env_var
+        logger.debug(f"Falling back to environment variable {secret_id.upper().replace('-', '_')}: {'Set' if env_var else 'Not set'}")
+        return env_var.strip() if env_var else None
     
     try:
         name = f"projects/{PROJECT_ID}/secrets/{secret_id}/versions/{version_id}"
         logger.debug(f"Requesting secret from: {name}")
-        response = secret_client.access_secret_version(request={"name": name})
+        response = secret_client.access_secret_version(name=name)
+        secret_value = response.payload.data.decode("UTF-8").strip()
         logger.info(f"Successfully accessed secret: {secret_id}")
-        return response.payload.data.decode("UTF-8")
+        logger.debug(f"Secret value (first 5 chars): {secret_value[:5]}...")
+        return secret_value
+    except google_exceptions.InvalidArgument as e:
+        logger.error(f"Invalid argument when accessing secret {secret_id}: {str(e)}")
+        logger.error(f"Project ID: {PROJECT_ID}, Secret ID: {secret_id}, Version ID: {version_id}")
+    except google_exceptions.NotFound as e:
+        logger.error(f"Secret {secret_id} not found: {str(e)}")
+    except google_exceptions.PermissionDenied as e:
+        logger.error(f"Permission denied when accessing secret {secret_id}: {str(e)}")
     except Exception as e:
-        logger.error(f"Error accessing secret {secret_id}: {str(e)}")
-        env_var = os.environ.get(secret_id.upper().replace('-', '_'))
-        logger.debug(f"Falling back to environment variable {secret_id.upper().replace('-', '_')}: {'Set' if env_var else 'Not set'}")
-        return env_var
+        logger.error(f"Unexpected error accessing secret {secret_id}: {str(e)}", exc_info=True)
+    
+    env_var = os.environ.get(secret_id.upper().replace('-', '_'))
+    logger.debug(f"Falling back to environment variable {secret_id.upper().replace('-', '_')}: {'Set' if env_var else 'Not set'}")
+    return env_var.strip() if env_var else None
 
 # Fetch secrets or use environment variables as fallback
 OPENAI_API_KEY = access_secret_version("openai-api-key")
 ASSISTANT_ID = access_secret_version("openai-assistant-id")
 
-logger.debug(f"OPENAI_API_KEY from secret: {'Set' if OPENAI_API_KEY else 'Not set'}")
-logger.debug(f"OPENAI_API_KEY environment variable: {'Set' if os.environ.get('OPENAI_API_KEY') else 'Not set'}")
+logger.info(f"OPENAI_API_KEY set: {'Yes' if OPENAI_API_KEY else 'No'}")
+logger.info(f"ASSISTANT_ID set: {'Yes' if ASSISTANT_ID else 'No'}")
 
-if not OPENAI_API_KEY:
-    logger.error("OpenAI API key not available. The application may not function correctly.")
-if not ASSISTANT_ID:
-    logger.error("OpenAI Assistant ID not available. The application may not function correctly.")
+if OPENAI_API_KEY:
+    logger.debug(f"OPENAI_API_KEY (first 5 chars): {OPENAI_API_KEY[:5]}...")
+else:
+    logger.error("OPENAI_API_KEY is not set")
 
 # Set up OpenAI
 openai.api_key = OPENAI_API_KEY
-logger.debug(f"OpenAI API Key set: {'Yes' if openai.api_key else 'No'}")
-logger.debug(f"Assistant ID set: {'Yes' if ASSISTANT_ID else 'No'}")
+logger.info(f"openai.api_key set: {'Yes' if openai.api_key else 'No'}")
+if openai.api_key:
+    logger.debug(f"openai.api_key (first 5 chars): {openai.api_key[:5]}...")
+else:
+    logger.error("openai.api_key is not set")
 
 @app.route('/')
 def index():
