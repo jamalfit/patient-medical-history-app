@@ -6,6 +6,9 @@ def get_medical_report_prompt(patient_data):
     3. Evaluate the patient's medical conditions and history in relation to their current status.
     4. Provide recommendations for further tests or consultations if necessary.
     5. Highlight any potential risks or areas of concern.
+    6. Provide a technical bulleted list of medication use as if this is used in 
+    a medical office.  The report is not for use of the patient, but for the medical
+    staff.
 
     Please use the following guidelines:
     - Be thorough and considerate in your analysis.
