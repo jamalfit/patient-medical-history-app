@@ -15,7 +15,7 @@
          data-callback="handleCredentialResponse"
          data-auto_prompt="false">
     </div>
-
+    
     <div class="g_id_signin"
          data-type="standard"
          data-shape="rectangular"
@@ -24,15 +24,14 @@
          data-size="large"
          data-logo_alignment="left">
     </div>
-
+    
     <form id="patient-form" action="{{ url_for('submit') }}" method="post" style="display:none;">
         <input type="hidden" name="credential" id="credential">
-        <!-- Add your form fields here -->
     </form>
-
+    
     <script>
         console.log("Client ID used in frontend:", "{{ client_id }}");
-
+        
         function handleCredentialResponse(response) {
             console.log("Received credential response:", response);
             document.getElementById('credential').value = response.credential;
