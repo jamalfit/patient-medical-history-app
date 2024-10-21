@@ -28,22 +28,31 @@ except Exception as e:
     secret_client = None
 
 def access_secret_version(secret_id, version_id="latest"):
+    logger.debug(f"Attempting to access secret: {secret_id}")
     if not secret_client or not PROJECT_ID:
         logger.warning(f"Secret Manager not available. Falling back to environment variable for {secret_id}")
-        return os.environ.get(secret_id.upper().replace('-', '_'))
+        env_var = os.environ.get(secret_id.upper().replace('-', '_'))
+        logger.debug(f"Environment variable {secret_id.upper().replace('-', '_')}: {'Set' if env_var else 'Not set'}")
+        return env_var
     
     try:
         name = f"projects/{PROJECT_ID}/secrets/{secret_id}/versions/{version_id}"
+        logger.debug(f"Requesting secret from: {name}")
         response = secret_client.access_secret_version(request={"name": name})
         logger.info(f"Successfully accessed secret: {secret_id}")
         return response.payload.data.decode("UTF-8")
     except Exception as e:
         logger.error(f"Error accessing secret {secret_id}: {str(e)}")
-        return os.environ.get(secret_id.upper().replace('-', '_'))
+        env_var = os.environ.get(secret_id.upper().replace('-', '_'))
+        logger.debug(f"Falling back to environment variable {secret_id.upper().replace('-', '_')}: {'Set' if env_var else 'Not set'}")
+        return env_var
 
 # Fetch secrets or use environment variables as fallback
 OPENAI_API_KEY = access_secret_version("openai-api-key")
 ASSISTANT_ID = access_secret_version("openai-assistant-id")
+
+logger.debug(f"OPENAI_API_KEY from secret: {'Set' if OPENAI_API_KEY else 'Not set'}")
+logger.debug(f"OPENAI_API_KEY environment variable: {'Set' if os.environ.get('OPENAI_API_KEY') else 'Not set'}")
 
 if not OPENAI_API_KEY:
     logger.error("OpenAI API key not available. The application may not function correctly.")
@@ -52,7 +61,7 @@ if not ASSISTANT_ID:
 
 # Set up OpenAI
 openai.api_key = OPENAI_API_KEY
-logger.debug(f"OpenAI API Key set: {'Yes' if OPENAI_API_KEY else 'No'}")
+logger.debug(f"OpenAI API Key set: {'Yes' if openai.api_key else 'No'}")
 logger.debug(f"Assistant ID set: {'Yes' if ASSISTANT_ID else 'No'}")
 
 @app.route('/')
@@ -135,6 +144,10 @@ def process_form():
 
         # OpenAI interaction
         try:
+            if not openai.api_key:
+                logger.error("OpenAI API key is not set")
+                return jsonify({"error": "OpenAI API key is not configured"}), 500
+
             logger.debug("Creating thread for OpenAI assistant")
             thread = openai.beta.threads.create()
             logger.debug(f"Thread created: {thread.id}")
