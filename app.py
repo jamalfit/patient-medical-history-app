@@ -1,13 +1,14 @@
 import os
 import logging
+import time
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from google.cloud import secretmanager
 import openai
-import time
 
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
@@ -96,6 +97,9 @@ def patient_form():
 def process_form():
     logger.debug("Processing patient form")
     try:
+        # Log form data (be careful with sensitive information in production)
+        logger.debug(f"Received form data: {request.form}")
+
         # Extract form data
         name = request.form.get('name')
         age = request.form.get('age')
@@ -104,6 +108,8 @@ def process_form():
         medical_history = request.form.get('medical_history')
         current_medications = request.form.get('current_medications')
         allergies = request.form.get('allergies')
+
+        logger.debug("Form data extracted successfully")
 
         # Prepare the message for the OpenAI assistant
         message_content = f"""
@@ -123,6 +129,9 @@ def process_form():
         4. Recommendations for further tests or lifestyle changes if necessary
         """
 
+        logger.debug("Message content prepared for OpenAI assistant")
+
+        # OpenAI interaction
         logger.debug("Creating thread for OpenAI assistant")
         thread = openai.beta.threads.create()
 
@@ -140,8 +149,9 @@ def process_form():
         )
 
         # Wait for the assistant to complete
+        logger.debug("Waiting for assistant to complete")
         while run.status != 'completed':
-            time.sleep(1)  # Wait for 1 second before checking again
+            time.sleep(1)
             run = openai.beta.threads.runs.retrieve(
                 thread_id=thread.id,
                 run_id=run.id
@@ -167,7 +177,7 @@ def process_form():
                                assessment=assessment)
 
     except Exception as e:
-        logger.error(f"Error processing form: {str(e)}")
+        logger.error(f"Error processing form: {str(e)}", exc_info=True)
         return jsonify({"error": "An error occurred while processing the form"}), 500
 
 @app.errorhandler(404)
@@ -177,7 +187,7 @@ def not_found_error(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    logger.error(f"500 error: {error}")
+    logger.error(f"500 error: {error}", exc_info=True)
     return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
