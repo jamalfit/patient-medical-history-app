@@ -16,5 +16,5 @@ COPY . .
 # Set the environment variable for the port
 ENV PORT 8080
 
-# Specify the command to run the application
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app
+# Specify the command to run the application with verbose logging
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 --log-level debug app:app
