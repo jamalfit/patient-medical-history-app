@@ -18,23 +18,24 @@
     <p>Additional Medical History: {{ medical_history }}</p>
 
     <h2>AI-Generated Medical Report</h2>
-    <h3>ASA Status:</h3>
-    <p>{{ asa_status }}</p>
+    
+    <h3>ASA Physical Status Classification:</h3>
+    <p>{{ ASA_Physical_Status_Classification | safe }}</p>
 
     <h3>Medication Analysis:</h3>
-    <p>{{ medication_analysis }}</p>
+    <p>{{ Medication_Analysis | safe }}</p>
 
     <h3>Medical Evaluation:</h3>
-    <p>{{ medical_evaluation }}</p>
+    <p>{{ Medical_Evaluation | safe }}</p>
 
     <h3>Recommendations:</h3>
-    <p>{{ recommendations }}</p>
+    <p>{{ Recommendations | safe }}</p>
 
     <h3>Risk Assessment:</h3>
-    <p>{{ risk_assessment }}</p>
+    <p>{{ Risk_Assessment | safe }}</p>
 
     <h3>Additional Notes:</h3>
-    <p>{{ additional_notes }}</p>
+    <p>{{ Additional_Notes | safe }}</p>
 
     <p>A copy of this information has been sent to: {{ email }}</p>
 </body>
