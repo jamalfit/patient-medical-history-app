@@ -3,14 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submission Result</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Patient Medical History Result</title>
 </head>
 <body>
-    <h1>Submission Result</h1>
+    <h1>Patient Medical History Result</h1>
     <p>Thank you for your submission, {{ name }}!</p>
     <p>Age: {{ age }}</p>
-    <p>Medical History: {{ medical_history }}</p>
+    <p>Height: {{ height }} inches</p>
+    <p>Weight: {{ weight }} pounds</p>
+    <p>BMI: {{ bmi }}</p>
+    <p>Current Medications: {{ current_meds }}</p>
+    <p>Allergies: {{ allergies }}</p>
+    <p>Medical Conditions: {{ medical_conditions }}</p>
+    <p>Additional Medical History: {{ medical_history }}</p>
+    <p>ASA Status: {{ asa_status }}</p>
+    <h2>Medication Report:</h2>
+    <pre>{{ medication_report }}</pre>
     <p>A copy of this information has been sent to: {{ email }}</p>
 </body>
 </html>
