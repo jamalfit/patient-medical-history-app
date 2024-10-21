@@ -5,6 +5,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from google.cloud import aiplatform
 from vertexai.language_models import TextGenerationModel
+from ai_prompt import get_medical_report_prompt
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -34,49 +35,7 @@ def generate_medical_report(patient_data):
     logger.debug("Generating medical report")
     try:
         model = TextGenerationModel.from_pretrained("text-bison@001")
-        prompt = f"""
-        You are an AI medical assistant tasked with analyzing patient data and providing a comprehensive medical report. Your role is to:
-        1. Determine the ASA Physical Status Classification based on the patient's information.
-        2. Analyze the patient's current medications, considering potential interactions and side effects.
-        3. Evaluate the patient's medical conditions and history in relation to their current status.
-        4. Provide recommendations for further tests or consultations if necessary.
-        5. Highlight any potential risks or areas of concern.
-
-        Please use the following guidelines:
-        - Be thorough and considerate in your analysis.
-        - Use medical terminology where appropriate, but ensure the report is understandable to healthcare professionals.
-        - If there's insufficient information to make a determination, state this clearly.
-        - Be concise but comprehensive in your report.
-
-        Patient Information:
-        Age: {patient_data['age']}
-        BMI: {patient_data['bmi']}
-        Current Medications: {patient_data['current_meds']}
-        Allergies: {patient_data['allergies']}
-        Medical Conditions: {patient_data['medical_conditions']}
-        Medical History: {patient_data['medical_history']}
-
-        Please format your response as follows:
-
-        ASA Status: [Your ASA Physical Status Classification]
-
-        Medication Analysis:
-        [Detailed analysis of current medications, potential interactions, and concerns]
-
-        Medical Evaluation:
-        [Evaluation of medical conditions and history]
-
-        Recommendations:
-        [Any recommended tests, consultations, or lifestyle changes]
-
-        Risk Assessment:
-        [Highlight of potential risks or areas of concern]
-
-        Additional Notes:
-        [Any other relevant information or observations]
-
-        """
-
+        prompt = get_medical_report_prompt(patient_data)
         response = model.predict(prompt, max_output_tokens=1024, temperature=0.2)
         logger.debug("Medical report generated successfully")
         return response.text
