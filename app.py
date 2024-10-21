@@ -37,7 +37,15 @@ def generate_medical_report(patient_data):
         prompt = get_medical_report_prompt(patient_data)
         
         model = GenerativeModel("gemini-pro")
-        response = model.generate_content(prompt)
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "max_output_tokens": 4096,
+                "temperature": 0.3,
+                "top_p": 0.8,
+                "top_k": 40
+            }
+        )
         
         logger.debug("Medical report generated successfully")
         return response.text
@@ -109,35 +117,25 @@ def process_form():
         logger.debug(f"AI Response: {ai_response}")
         
         # Parse the AI response
-        asa_status = "Unknown"
-        medication_analysis = ""
-        medical_evaluation = ""
-        recommendations = ""
-        risk_assessment = ""
-        additional_notes = ""
+        sections = {
+            "ASA Physical Status Classification": "",
+            "Medication Analysis": "",
+            "Medical Evaluation": "",
+            "Recommendations": "",
+            "Risk Assessment": "",
+            "Additional Notes": ""
+        }
 
-        sections = ai_response.split("\n\n")
-        for section in sections:
-            logger.debug(f"Processing section: {section[:50]}...")  # Log first 50 chars of each section
-            if "ASA Physical Status Classification" in section:
-                asa_status = section.split(":", 1)[1].strip() if ":" in section else section
-                logger.debug(f"Found ASA Status: {asa_status}")
-            elif "Medication Analysis" in section:
-                medication_analysis = section.split(":", 1)[1].strip() if ":" in section else section
-                logger.debug(f"Found Medication Analysis: {medication_analysis[:50]}...")
-            elif "Medical Evaluation" in section:
-                medical_evaluation = section.split(":", 1)[1].strip() if ":" in section else section
-                logger.debug(f"Found Medical Evaluation: {medical_evaluation[:50]}...")
-            elif "Recommendations" in section:
-                recommendations = section.split(":", 1)[1].strip() if ":" in section else section
-                logger.debug(f"Found Recommendations: {recommendations[:50]}...")
-            elif "Risk Assessment" in section:
-                risk_assessment = section.split(":", 1)[1].strip() if ":" in section else section
-                logger.debug(f"Found Risk Assessment: {risk_assessment[:50]}...")
-            elif "Additional Notes" in section:
-                additional_notes = section.split(":", 1)[1].strip() if ":" in section else section
-                logger.debug(f"Found Additional Notes: {additional_notes[:50]}...")
-        
+        current_section = None
+        for line in ai_response.split('\n'):
+            if any(section in line for section in sections.keys()):
+                current_section = next(section for section in sections.keys() if section in line)
+            elif current_section:
+                sections[current_section] += line + '\n'
+
+        for section, content in sections.items():
+            logger.debug(f"{section}: {content[:100]}...")  # Log first 100 chars of each section
+
         logger.debug("Form processed successfully, rendering result")
         return render_template('result.html', 
                                name=name, 
@@ -150,12 +148,7 @@ def process_form():
                                medical_conditions=medical_conditions,
                                medical_history=medical_history,
                                email=email,
-                               asa_status=asa_status,
-                               medication_analysis=medication_analysis,
-                               medical_evaluation=medical_evaluation,
-                               recommendations=recommendations,
-                               risk_assessment=risk_assessment,
-                               additional_notes=additional_notes)
+                               **sections)
     except Exception as e:
         logger.error(f"Error processing form: {str(e)}")
         return jsonify({"error": "An error occurred while processing the form"}), 500

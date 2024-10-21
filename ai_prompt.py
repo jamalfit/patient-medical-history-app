@@ -1,50 +1,44 @@
 def get_medical_report_prompt(patient_data):
     return f"""
-    You are an AI medical assistant tasked with analyzing patient data and providing a comprehensive medical report. Your role is to:
-    1. Determine the ASA Physical Status Classification based on the patient's information.
-    2. Analyze the patient's current medications, considering potential interactions and side effects.
-    3. Evaluate the patient's medical conditions and history in relation to their current status.
-    4. Provide recommendations for further tests or consultations if necessary.
-    5. Highlight any potential risks or areas of concern.
-    6. Provide a technical bulleted list of medication use as if this is used in 
-    a medical office.  The report is not for use of the patient, but for the medical
-    staff.
-    7. Calculate the BMI from the data submitted and obese classification
+    As an AI medical assistant, provide a comprehensive medical report for the following patient. Your report must include detailed information for ALL of the following sections:
 
-    Please use the following guidelines:
-    - Act as if you are an internist or hospitallist
-    - Be thorough and considerate in your analysis.
-    - Use medical terminology where appropriate, but ensure the report is understandable to healthcare professionals.
-    - If there's insufficient information to make a determination, state this clearly.
-    - Be concise but comprehensive in your report.
+    1. ASA Physical Status Classification:
+       - Determine the ASA class (I-VI) based on the patient's overall health status.
+       - Provide a brief explanation for the classification.
+
+    2. Medication Analysis:
+       - List all current medications.
+       - Identify potential drug interactions or side effects.
+       - Suggest any necessary adjustments or additional medications.
+
+    3. Medical Evaluation:
+       - Assess each reported medical condition and its current status.
+       - Evaluate how the medical history impacts the patient's current health.
+       - Consider the impact of BMI on the patient's health.
+
+    4. Recommendations:
+       - Suggest specific tests or consultations based on the patient's conditions.
+       - Recommend lifestyle changes or interventions to improve health.
+       - Propose a follow-up schedule if necessary.
+
+    5. Risk Assessment:
+       - Identify potential health risks based on the patient's profile.
+       - Assess the likelihood and severity of these risks.
+       - Suggest preventive measures for identified risks.
+
+    6. Additional Notes:
+       - Provide any other relevant observations or concerns.
+       - Highlight areas where more information might be needed for a complete assessment.
+
+    Use medical terminology appropriately, but ensure the report is clear and understandable. Be thorough and specific in your analysis for each section.
 
     Patient Information:
-    Age: {patient_data['age']}
-    BMI: {patient_data['bmi']}
-    Current Medications: {patient_data['current_meds']}
-    Allergies: {patient_data['allergies']}
-    Medical Conditions: {patient_data['medical_conditions']}
-    Medical History: {patient_data['medical_history']}
+    - Age: {patient_data['age']}
+    - BMI: {patient_data['bmi']}
+    - Current Medications: {patient_data['current_meds']}
+    - Allergies: {patient_data['allergies']}
+    - Medical Conditions: {patient_data['medical_conditions']}
+    - Medical History: {patient_data['medical_history']}
 
-    Please format your response as follows:
-
-    ASA Status: [Your ASA Physical Status Classification]
-
-    BMI: [Calculate the BMI and report it here]
-
-    Medication Analysis:
-    [Detailed analysis of current medications, potential interactions, and concerns]
-
-    Medical Evaluation:
-    [Evaluation of medical conditions and history]
-
-    Recommendations:
-    [Any recommended tests, consultations, or lifestyle changes]
-
-    Risk Assessment:
-    [Highlight of potential risks or areas of concern especially for complex
-    dental procedures]
-
-    Additional Notes:
-    [Any other relevant information or observations]
+    Structure your response with clear section headers for each of the six areas mentioned above. Ensure that you provide substantial information for each section, not just the BMI analysis.
     """
