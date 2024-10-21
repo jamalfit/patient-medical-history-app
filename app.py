@@ -52,6 +52,8 @@ if not ASSISTANT_ID:
 
 # Set up OpenAI
 openai.api_key = OPENAI_API_KEY
+logger.debug(f"OpenAI API Key set: {'Yes' if OPENAI_API_KEY else 'No'}")
+logger.debug(f"Assistant ID set: {'Yes' if ASSISTANT_ID else 'No'}")
 
 @app.route('/')
 def index():
@@ -95,19 +97,19 @@ def patient_form():
 
 @app.route('/process_form', methods=['POST'])
 def process_form():
-    logger.debug("Processing patient form")
+    logger.debug("Process form function called")
     try:
-        # Log form data (be careful with sensitive information in production)
+        # Log all form data (be careful with sensitive information in production)
         logger.debug(f"Received form data: {request.form}")
 
         # Extract form data
-        name = request.form.get('name')
-        age = request.form.get('age')
-        height = request.form.get('height')
-        weight = request.form.get('weight')
-        medical_history = request.form.get('medical_history')
-        current_medications = request.form.get('current_medications')
-        allergies = request.form.get('allergies')
+        name = request.form.get('name', '')
+        age = request.form.get('age', '')
+        height = request.form.get('height', '')
+        weight = request.form.get('weight', '')
+        medical_history = request.form.get('medical_history', '')
+        current_medications = request.form.get('current_medications', '')
+        allergies = request.form.get('allergies', '')
 
         logger.debug("Form data extracted successfully")
 
@@ -132,38 +134,57 @@ def process_form():
         logger.debug("Message content prepared for OpenAI assistant")
 
         # OpenAI interaction
-        logger.debug("Creating thread for OpenAI assistant")
-        thread = openai.beta.threads.create()
+        try:
+            logger.debug("Creating thread for OpenAI assistant")
+            thread = openai.beta.threads.create()
+            logger.debug(f"Thread created: {thread.id}")
 
-        logger.debug("Adding message to thread")
-        message = openai.beta.threads.messages.create(
-            thread_id=thread.id,
-            role="user",
-            content=message_content
-        )
-
-        logger.debug("Running assistant")
-        run = openai.beta.threads.runs.create(
-            thread_id=thread.id,
-            assistant_id=ASSISTANT_ID
-        )
-
-        # Wait for the assistant to complete
-        logger.debug("Waiting for assistant to complete")
-        while run.status != 'completed':
-            time.sleep(1)
-            run = openai.beta.threads.runs.retrieve(
+            logger.debug("Adding message to thread")
+            message = openai.beta.threads.messages.create(
                 thread_id=thread.id,
-                run_id=run.id
+                role="user",
+                content=message_content
             )
-            logger.debug(f"Run status: {run.status}")
+            logger.debug(f"Message added to thread: {message.id}")
 
-        logger.debug("Assistant run completed, retrieving messages")
-        messages = openai.beta.threads.messages.list(thread_id=thread.id)
+            logger.debug("Running assistant")
+            run = openai.beta.threads.runs.create(
+                thread_id=thread.id,
+                assistant_id=ASSISTANT_ID
+            )
+            logger.debug(f"Run created: {run.id}")
 
-        # Get the last assistant message
-        assistant_message = next(msg for msg in reversed(messages.data) if msg.role == 'assistant')
-        assessment = assistant_message.content[0].text.value
+            # Wait for the assistant to complete (with a timeout)
+            logger.debug("Waiting for assistant to complete")
+            timeout = time.time() + 60  # 60 second timeout
+            while run.status != 'completed':
+                if time.time() > timeout:
+                    logger.error("Assistant run timed out")
+                    return jsonify({"error": "Assistant run timed out"}), 504
+                time.sleep(1)
+                run = openai.beta.threads.runs.retrieve(
+                    thread_id=thread.id,
+                    run_id=run.id
+                )
+                logger.debug(f"Run status: {run.status}")
+
+            logger.debug("Assistant run completed, retrieving messages")
+            messages = openai.beta.threads.messages.list(thread_id=thread.id)
+
+            # Get the last assistant message
+            assistant_message = next((msg for msg in reversed(messages.data) if msg.role == 'assistant'), None)
+            if assistant_message is None:
+                logger.error("No assistant message found")
+                return jsonify({"error": "No response from assistant"}), 500
+            
+            assessment = assistant_message.content[0].text.value
+            logger.debug(f"Assessment received: {assessment[:100]}...")  # Log first 100 chars of assessment
+
+        except openai.OpenAIError as e:
+            logger.error(f"OpenAI API error: {str(e)}")
+            logger.error(f"OpenAI API Key: {OPENAI_API_KEY[:5]}...{OPENAI_API_KEY[-5:] if OPENAI_API_KEY else 'Not Set'}")
+            logger.error(f"Assistant ID: {ASSISTANT_ID}")
+            return jsonify({"error": f"Error communicating with OpenAI API: {str(e)}"}), 500
 
         logger.debug("Rendering result template")
         return render_template('result.html', 
