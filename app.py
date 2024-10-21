@@ -35,7 +35,18 @@ def generate_medical_report(patient_data):
     try:
         model = TextGenerationModel.from_pretrained("text-bison@001")
         prompt = f"""
-        Based on the following patient information, provide an ASA Physical Status Classification and a brief report on the patient's medications. Include any potential interactions or concerns.
+        You are an AI medical assistant tasked with analyzing patient data and providing a comprehensive medical report. Your role is to:
+        1. Determine the ASA Physical Status Classification based on the patient's information.
+        2. Analyze the patient's current medications, considering potential interactions and side effects.
+        3. Evaluate the patient's medical conditions and history in relation to their current status.
+        4. Provide recommendations for further tests or consultations if necessary.
+        5. Highlight any potential risks or areas of concern.
+
+        Please use the following guidelines:
+        - Be thorough and considerate in your analysis.
+        - Use medical terminology where appropriate, but ensure the report is understandable to healthcare professionals.
+        - If there's insufficient information to make a determination, state this clearly.
+        - Be concise but comprehensive in your report.
 
         Patient Information:
         Age: {patient_data['age']}
@@ -46,10 +57,24 @@ def generate_medical_report(patient_data):
         Medical History: {patient_data['medical_history']}
 
         Please format your response as follows:
-        ASA Status: [Your assessment]
-        
-        Medication Report:
-        [Your detailed report on medications, potential interactions, and concerns]
+
+        ASA Status: [Your ASA Physical Status Classification]
+
+        Medication Analysis:
+        [Detailed analysis of current medications, potential interactions, and concerns]
+
+        Medical Evaluation:
+        [Evaluation of medical conditions and history]
+
+        Recommendations:
+        [Any recommended tests, consultations, or lifestyle changes]
+
+        Risk Assessment:
+        [Highlight of potential risks or areas of concern]
+
+        Additional Notes:
+        [Any other relevant information or observations]
+
         """
 
         response = model.predict(prompt, max_output_tokens=1024, temperature=0.2)
@@ -121,12 +146,28 @@ def process_form():
         
         ai_response = generate_medical_report(patient_data)
         
+        # Parse the AI response
         asa_status = "Unknown"
-        medication_report = ai_response
-        if "ASA Status:" in ai_response:
-            parts = ai_response.split("Medication Report:", 1)
-            asa_status = parts[0].split("ASA Status:", 1)[1].strip()
-            medication_report = parts[1].strip() if len(parts) > 1 else ""
+        medication_analysis = ""
+        medical_evaluation = ""
+        recommendations = ""
+        risk_assessment = ""
+        additional_notes = ""
+
+        sections = ai_response.split("\n\n")
+        for section in sections:
+            if section.startswith("ASA Status:"):
+                asa_status = section.split(":", 1)[1].strip()
+            elif section.startswith("Medication Analysis:"):
+                medication_analysis = section.split(":", 1)[1].strip()
+            elif section.startswith("Medical Evaluation:"):
+                medical_evaluation = section.split(":", 1)[1].strip()
+            elif section.startswith("Recommendations:"):
+                recommendations = section.split(":", 1)[1].strip()
+            elif section.startswith("Risk Assessment:"):
+                risk_assessment = section.split(":", 1)[1].strip()
+            elif section.startswith("Additional Notes:"):
+                additional_notes = section.split(":", 1)[1].strip()
         
         logger.debug("Form processed successfully, rendering result")
         return render_template('result.html', 
@@ -141,7 +182,11 @@ def process_form():
                                medical_history=medical_history,
                                email=email,
                                asa_status=asa_status,
-                               medication_report=medication_report)
+                               medication_analysis=medication_analysis,
+                               medical_evaluation=medical_evaluation,
+                               recommendations=recommendations,
+                               risk_assessment=risk_assessment,
+                               additional_notes=additional_notes)
     except Exception as e:
         logger.error(f"Error processing form: {str(e)}")
         return jsonify({"error": "An error occurred while processing the form"}), 500

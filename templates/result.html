@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Patient Medical History Result</h1>
-    <p>Thank you for your submission, {{ name }}!</p>
+    <p>Name: {{ name }}</p>
     <p>Age: {{ age }}</p>
     <p>Height: {{ height }} inches</p>
     <p>Weight: {{ weight }} pounds</p>
@@ -16,9 +16,26 @@
     <p>Allergies: {{ allergies }}</p>
     <p>Medical Conditions: {{ medical_conditions }}</p>
     <p>Additional Medical History: {{ medical_history }}</p>
-    <p>ASA Status: {{ asa_status }}</p>
-    <h2>Medication Report:</h2>
-    <pre>{{ medication_report }}</pre>
+
+    <h2>AI-Generated Medical Report</h2>
+    <h3>ASA Status:</h3>
+    <p>{{ asa_status }}</p>
+
+    <h3>Medication Analysis:</h3>
+    <p>{{ medication_analysis }}</p>
+
+    <h3>Medical Evaluation:</h3>
+    <p>{{ medical_evaluation }}</p>
+
+    <h3>Recommendations:</h3>
+    <p>{{ recommendations }}</p>
+
+    <h3>Risk Assessment:</h3>
+    <p>{{ risk_assessment }}</p>
+
+    <h3>Additional Notes:</h3>
+    <p>{{ additional_notes }}</p>
+
     <p>A copy of this information has been sent to: {{ email }}</p>
 </body>
 </html>
