@@ -4,36 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Medical History Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        form { background: #f4f4f4; padding: 20px; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd; }
+        input[type="submit"] { background: #333; color: #fff; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; }
+        input[type="submit"]:hover { background: #555; }
+    </style>
 </head>
 <body>
-    <h1>Patient Medical History Form</h1>
-    <p>Logged in as: {{ email }}</p>
-    <form action="{{ url_for('process_form') }}" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required><br><br>
-        
-        <label for="age">Age:</label>
-        <input type="number" id="age" name="age" required><br><br>
-        
-        <label for="height">Height (in inches):</label>
-        <input type="number" id="height" name="height" required><br><br>
-        
-        <label for="weight">Weight (in pounds):</label>
-        <input type="number" id="weight" name="weight" required><br><br>
-        
-        <label for="current_meds">Current Medications:</label><br>
-        <textarea id="current_meds" name="current_meds" rows="4" cols="50"></textarea><br><br>
-        
-        <label for="allergies">Allergies:</label><br>
-        <textarea id="allergies" name="allergies" rows="4" cols="50"></textarea><br><br>
-        
-        <label for="medical_conditions">Medical Conditions:</label><br>
-        <textarea id="medical_conditions" name="medical_conditions" rows="4" cols="50"></textarea><br><br>
-        
-        <label for="medical_history">Additional Medical History:</label><br>
-        <textarea id="medical_history" name="medical_history" rows="4" cols="50"></textarea><br><br>
-        
-        <input type="submit" value="Submit">
-    </form>
+    <div class="container">
+        <h1>Patient Medical History Form</h1>
+        <form action="{{ url_for('process_form') }}" method="post">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" required>
+
+            <label for="height">Height (inches):</label>
+            <input type="number" id="height" name="height" step="0.1" required>
+
+            <label for="weight">Weight (lbs):</label>
+            <input type="number" id="weight" name="weight" step="0.1" required>
+
+            <label for="medical_history">Medical History:</label>
+            <textarea id="medical_history" name="medical_history" rows="4" required></textarea>
+
+            <label for="current_medications">Current Medications:</label>
+            <textarea id="current_medications" name="current_medications" rows="4" required></textarea>
+
+            <label for="allergies">Allergies:</label>
+            <textarea id="allergies" name="allergies" rows="4" required></textarea>
+
+            <input type="submit" value="Submit">
+        </form>
+    </div>
 </body>
 </html>

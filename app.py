@@ -5,6 +5,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from google.cloud import secretmanager
 import openai
+import time
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -95,9 +96,76 @@ def patient_form():
 def process_form():
     logger.debug("Processing patient form")
     try:
-        # Process form data here
-        # For now, just return a success message
-        return jsonify({"message": "Form processed successfully"}), 200
+        # Extract form data
+        name = request.form.get('name')
+        age = request.form.get('age')
+        height = request.form.get('height')
+        weight = request.form.get('weight')
+        medical_history = request.form.get('medical_history')
+        current_medications = request.form.get('current_medications')
+        allergies = request.form.get('allergies')
+
+        # Prepare the message for the OpenAI assistant
+        message_content = f"""
+        Patient Information:
+        Name: {name}
+        Age: {age}
+        Height: {height} inches
+        Weight: {weight} lbs
+        Medical History: {medical_history}
+        Current Medications: {current_medications}
+        Allergies: {allergies}
+
+        Please provide a medical assessment including:
+        1. BMI calculation and interpretation
+        2. Analysis of current medications and potential interactions
+        3. Assessment of overall health based on the provided information
+        4. Recommendations for further tests or lifestyle changes if necessary
+        """
+
+        logger.debug("Creating thread for OpenAI assistant")
+        thread = openai.beta.threads.create()
+
+        logger.debug("Adding message to thread")
+        message = openai.beta.threads.messages.create(
+            thread_id=thread.id,
+            role="user",
+            content=message_content
+        )
+
+        logger.debug("Running assistant")
+        run = openai.beta.threads.runs.create(
+            thread_id=thread.id,
+            assistant_id=ASSISTANT_ID
+        )
+
+        # Wait for the assistant to complete
+        while run.status != 'completed':
+            time.sleep(1)  # Wait for 1 second before checking again
+            run = openai.beta.threads.runs.retrieve(
+                thread_id=thread.id,
+                run_id=run.id
+            )
+            logger.debug(f"Run status: {run.status}")
+
+        logger.debug("Assistant run completed, retrieving messages")
+        messages = openai.beta.threads.messages.list(thread_id=thread.id)
+
+        # Get the last assistant message
+        assistant_message = next(msg for msg in reversed(messages.data) if msg.role == 'assistant')
+        assessment = assistant_message.content[0].text.value
+
+        logger.debug("Rendering result template")
+        return render_template('result.html', 
+                               name=name, 
+                               age=age, 
+                               height=height, 
+                               weight=weight,
+                               medical_history=medical_history,
+                               current_medications=current_medications,
+                               allergies=allergies,
+                               assessment=assessment)
+
     except Exception as e:
         logger.error(f"Error processing form: {str(e)}")
         return jsonify({"error": "An error occurred while processing the form"}), 500

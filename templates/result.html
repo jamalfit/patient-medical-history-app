@@ -3,40 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Medical History Result</title>
+    <title>Medical Assessment Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        h1, h2 { color: #333; }
+        .assessment { background: #f4f4f4; padding: 20px; border-radius: 5px; white-space: pre-wrap; }
+    </style>
 </head>
 <body>
-    <h1>Patient Medical History Result</h1>
-    <p>Name: {{ name }}</p>
-    <p>Age: {{ age }}</p>
-    <p>Height: {{ height }} inches</p>
-    <p>Weight: {{ weight }} pounds</p>
-    <p>BMI: {{ bmi }}</p>
-    <p>Current Medications: {{ current_meds }}</p>
-    <p>Allergies: {{ allergies }}</p>
-    <p>Medical Conditions: {{ medical_conditions }}</p>
-    <p>Additional Medical History: {{ medical_history }}</p>
+    <div class="container">
+        <h1>Medical Assessment Result</h1>
+        <h2>Patient Information</h2>
+        <p><strong>Name:</strong> {{ name }}</p>
+        <p><strong>Age:</strong> {{ age }}</p>
+        <p><strong>Height:</strong> {{ height }} inches</p>
+        <p><strong>Weight:</strong> {{ weight }} lbs</p>
+        <p><strong>Medical History:</strong> {{ medical_history }}</p>
+        <p><strong>Current Medications:</strong> {{ current_medications }}</p>
+        <p><strong>Allergies:</strong> {{ allergies }}</p>
 
-    <h2>AI-Generated Medical Report</h2>
-    
-    <h3>ASA Physical Status Classification:</h3>
-    <p>{{ ASA_Physical_Status_Classification | safe }}</p>
-
-    <h3>Medication Analysis:</h3>
-    <p>{{ Medication_Analysis | safe }}</p>
-
-    <h3>Medical Evaluation:</h3>
-    <p>{{ Medical_Evaluation | safe }}</p>
-
-    <h3>Recommendations:</h3>
-    <p>{{ Recommendations | safe }}</p>
-
-    <h3>Risk Assessment:</h3>
-    <p>{{ Risk_Assessment | safe }}</p>
-
-    <h3>Additional Notes:</h3>
-    <p>{{ Additional_Notes | safe }}</p>
-
-    <p>A copy of this information has been sent to: {{ email }}</p>
+        <h2>AI-Generated Assessment</h2>
+        <div class="assessment">
+{{ assessment }}
+        </div>
+    </div>
 </body>
 </html>

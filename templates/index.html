@@ -3,40 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Medical History Form</title>
+    <title>Patient Medical History App</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
 </head>
 <body>
-    <h1>Patient Medical History Form</h1>
-    <div id="g_id_onload"
-         data-client_id="{{ client_id }}"
-         data-context="signin"
-         data-ux_mode="popup"
-         data-callback="handleCredentialResponse"
-         data-auto_prompt="false">
-    </div>
-    
-    <div class="g_id_signin"
-         data-type="standard"
-         data-shape="rectangular"
-         data-theme="outline"
-         data-text="signin_with"
-         data-size="large"
-         data-logo_alignment="left">
-    </div>
-    
-    <form id="patient-form" action="{{ url_for('submit') }}" method="post" style="display:none;">
-        <input type="hidden" name="credential" id="credential">
-    </form>
-    
-    <script>
-        console.log("Client ID used in frontend:", "{{ client_id }}");
+    <div class="container">
+        <h1>Welcome to Patient Medical History App</h1>
+        <p>Please sign in with your Google account to access the patient form.</p>
         
-        function handleCredentialResponse(response) {
-            console.log("Received credential response:", response);
-            document.getElementById('credential').value = response.credential;
-            document.getElementById('patient-form').submit();
-        }
-    </script>
+        <div id="g_id_onload"
+             data-client_id="{{ client_id }}"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="signin_with"
+             data-size="large"
+             data-logo_alignment="left">
+        </div>
+
+        <form id="auth-form" action="{{ url_for('submit') }}" method="post" style="display:none;">
+            <input type="hidden" name="credential" id="credential">
+        </form>
+
+        <script>
+            function handleCredentialResponse(response) {
+                document.getElementById('credential').value = response.credential;
+                document.getElementById('auth-form').submit();
+            }
+        </script>
+    </div>
 </body>
 </html>
