@@ -4,18 +4,24 @@ FROM python:3.9-slim
 # Set working directory
 WORKDIR /app
 
-# Copy requirements first for caching
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better layer caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the src directory
+# Copy the source code
 COPY src/ src/
 
-# Add the current directory to PYTHONPATH
-ENV PYTHONPATH=/app/src
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV PORT=8080
+# Set environment variables
+ENV PYTHONPATH=/app/src \
+    FLASK_APP=app.py \
+    FLASK_ENV=production \
+    FLASK_RUN_HOST=0.0.0.0 \
+    PORT=8080
 
 # Expose port
 EXPOSE 8080
@@ -23,5 +29,17 @@ EXPOSE 8080
 # Change working directory to src
 WORKDIR /app/src
 
-# Update the Gunicorn command to use the correct module path
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app --log-level debug
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
+
+# Start Gunicorn
+CMD exec gunicorn \
+    --bind :${PORT} \
+    --workers 1 \
+    --threads 8 \
+    --timeout 0 \
+    --log-level debug \
+    --access-logfile - \
+    --error-logfile - \
+    app:app
