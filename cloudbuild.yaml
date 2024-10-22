@@ -23,7 +23,7 @@ steps:
   args:
   - 'run'
   - 'deploy'
-  - 'patient-medical-history-service'  # Changed service name to match project
+  - 'health-ai-app-service'
   - '--image'
   - 'us-central1-docker.pkg.dev/patient-medical-history-app/health-ai-app-repo/health-ai-app-image:$BUILD_ID'
   - '--region'
@@ -31,6 +31,10 @@ steps:
   - '--platform'
   - 'managed'
   - '--allow-unauthenticated'
+  - '--set-env-vars'
+  - 'GOOGLE_CLOUD_PROJECT=patient-medical-history-app'
+  - '--service-account'
+  - '${PROJECT_NUMBER}-compute@developer.gserviceaccount.com'
 
 images:
 - 'us-central1-docker.pkg.dev/patient-medical-history-app/health-ai-app-repo/health-ai-app-image:$BUILD_ID'
