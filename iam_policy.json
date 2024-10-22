@@ -1,0 +1,132 @@
+{
+  "bindings": [
+    {
+      "members": [
+        "serviceAccount:service-871207255390@gcp-sa-aiplatform.iam.gserviceaccount.com"
+      ],
+      "role": "roles/aiplatform.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/aiplatform.user"
+    },
+    {
+      "members": [
+        "serviceAccount:871207255390@cloudbuild.gserviceaccount.com",
+        "user:jamalfit@gmail.com"
+      ],
+      "role": "roles/artifactregistry.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:871207255390@cloudbuild.gserviceaccount.com",
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/artifactregistry.reader"
+    },
+    {
+      "members": [
+        "serviceAccount:service-871207255390@gcp-sa-artifactregistry.iam.gserviceaccount.com"
+      ],
+      "role": "roles/artifactregistry.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:871207255390@cloudbuild.gserviceaccount.com",
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/artifactregistry.writer"
+    },
+    {
+      "members": [
+        "serviceAccount:871207255390@cloudbuild.gserviceaccount.com"
+      ],
+      "role": "roles/cloudbuild.builds.builder"
+    },
+    {
+      "members": [
+        "serviceAccount:service-871207255390@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+      ],
+      "role": "roles/cloudbuild.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:service-871207255390@containerregistry.iam.gserviceaccount.com"
+      ],
+      "role": "roles/containerregistry.ServiceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:871207255390-compute@developer.gserviceaccount.com"
+      ],
+      "role": "roles/editor"
+    },
+    {
+      "members": [
+        "serviceAccount:871207255390@cloudbuild.gserviceaccount.com",
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/iam.serviceAccountUser"
+    },
+    {
+      "members": [
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/logging.logWriter"
+    },
+    {
+      "members": [
+        "user:jamalfit@gmail.com"
+      ],
+      "role": "roles/owner"
+    },
+    {
+      "members": [
+        "serviceAccount:service-871207255390@gcp-sa-pubsub.iam.gserviceaccount.com"
+      ],
+      "role": "roles/pubsub.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/run.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/run.invoker"
+    },
+    {
+      "members": [
+        "serviceAccount:service-871207255390@serverless-robot-prod.iam.gserviceaccount.com"
+      ],
+      "role": "roles/run.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/secretmanager.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:871207255390@cloudbuild.gserviceaccount.com",
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com",
+        "user:jamalfit@gmail.com"
+      ],
+      "role": "roles/storage.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:patient-app-sa@patient-medical-history-app.iam.gserviceaccount.com"
+      ],
+      "role": "roles/viewer"
+    }
+  ],
+  "etag": "BwYk7Td_KGc=",
+  "version": 1
+}
